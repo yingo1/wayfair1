@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wayfair 图片后台</title>
+  <style>
+    :root {
+      --purple: #7f1bb6;
+      --purple-dark: #5d1686;
+      --ink: #211f26;
+      --muted: #6d6874;
+      --line: #ded8e5;
+      --soft: #f7f4fa;
+      --ok: #177a3f;
+      --danger: #ad1749;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #fff;
+      letter-spacing: 0;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.96);
+      backdrop-filter: blur(8px);
+    }
+
+    .bar {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    a, button { font: inherit; }
+
+    .view-link {
+      color: #fff;
+      background: var(--purple);
+      text-decoration: none;
+      border-radius: 22px;
+      padding: 10px 18px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 22px;
+    }
+
+    .intro {
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0 0 22px;
+    }
+
+    .group-switch {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 0 0 18px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+    }
+
+    .group-button {
+      border: 1px solid var(--purple);
+      color: var(--purple);
+      background: #fff;
+      border-radius: 999px;
+      padding: 9px 15px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .group-button.active {
+      color: #fff;
+      background: var(--purple);
+    }
+
+    .group-view {
+      margin-left: auto;
+      color: var(--purple);
+      font-weight: 700;
+    }
+
+    .module {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      margin-bottom: 18px;
+      background: #fff;
+    }
+
+    .module-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    h2 {
+      margin: 0 0 6px;
+      font-size: 19px;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .count {
+      min-width: 86px;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 10px;
+      color: var(--purple);
+      font-weight: 700;
+      background: var(--soft);
+    }
+
+    .uploader {
+      border: 1px dashed #b9afc5;
+      border-radius: 8px;
+      padding: 18px;
+      background: #fbf9fd;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .clear {
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      background: #fff;
+      border-radius: 20px;
+      padding: 9px 14px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .preview {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    .tile {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .tile-img {
+      aspect-ratio: 1 / .82;
+      background-color: #f3f0f5;
+      display: grid;
+      place-items: center;
+    }
+
+    .tile-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: #fff;
+    }
+
+    .tile-meta {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+      font-size: 12px;
+    }
+
+    .badge {
+      color: var(--ok);
+      font-weight: 700;
+    }
+
+    .remove {
+      border: 0;
+      color: var(--danger);
+      background: transparent;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .sort-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .sort-button {
+      border: 1px solid var(--line);
+      color: var(--purple);
+      background: #fff;
+      border-radius: 999px;
+      padding: 4px 9px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .sort-button:disabled {
+      color: #aaa;
+      cursor: default;
+      background: #f6f4f8;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin: 24px 0 10px;
+      flex-wrap: wrap;
+    }
+
+    .primary, .secondary {
+      border-radius: 23px;
+      padding: 11px 18px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .primary {
+      border: 0;
+      color: #fff;
+      background: var(--purple);
+    }
+
+    .secondary {
+      border: 1px solid var(--purple);
+      color: var(--purple);
+      background: #fff;
+      text-decoration: none;
+    }
+
+    .status {
+      min-height: 24px;
+      color: var(--ok);
+      font-weight: 700;
+      text-align: right;
+    }
+
+    @media (max-width: 760px) {
+      .bar, main { padding-left: 14px; padding-right: 14px; }
+      .bar, .module-head, .uploader { grid-template-columns: 1fr; flex-direction: column; align-items: stretch; }
+      .preview { grid-template-columns: repeat(2, 1fr); }
+      .count { width: max-content; }
+      .status { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <h1>Wayfair 图片后台</h1>
+      <a class="view-link" href="index.html">查看展示页</a>
+    </div>
+  </header>
+
+  <main>
+    <p class="intro">上传后会保存在当前浏览器里。展示页刷新后自动读取这里的图片配置；主图模块前 3 张大图展示，第 4 张开始以缩略图展示。</p>
+
+    <div class="group-switch" aria-label="图组切换">
+      <button class="group-button active" type="button" data-group="group1">图组1</button>
+      <button class="group-button" type="button" data-group="group2">图组2</button>
+      <button class="group-button" type="button" data-group="group3">图组3</button>
+      <a class="group-view" id="groupViewLink" href="index.html">查看当前图组页面</a>
+    </div>
+
+    <section class="module" data-module="main" data-limit="10">
+      <div class="module-head">
+        <div>
+          <h2>模块一：图1主图模块</h2>
+          <p class="hint">最多上传 10 张。第 1 张为主图，第 2、3 张为下方双图，第 4-10 张显示为下方缩略图。</p>
+        </div>
+        <span class="count" id="mainCount">0 / 10</span>
+      </div>
+      <div class="uploader">
+        <input id="mainInput" type="file" accept="image/*" multiple />
+        <button class="clear" type="button" data-clear="main">清空模块</button>
+      </div>
+      <div class="preview" id="mainPreview"></div>
+    </section>
+
+    <section class="module" data-module="specs" data-limit="1">
+      <div class="module-head">
+        <div>
+          <h2>模块二：Specifications 图片</h2>
+          <p class="hint">上传 1 张产品尺寸/参数图，展示页点击 Specifications 后展开显示。</p>
+        </div>
+        <span class="count" id="specsCount">0 / 1</span>
+      </div>
+      <div class="uploader">
+        <input id="specsInput" type="file" accept="image/*" multiple />
+        <button class="clear" type="button" data-clear="specs">清空模块</button>
+      </div>
+      <div class="preview" id="specsPreview"></div>
+    </section>
+
+    <section class="module" data-module="aplus" data-limit="4">
+      <div class="module-head">
+        <div>
+          <h2>模块三：A+ 模板</h2>
+          <p class="hint">由 4 张图片组成，对应图2里的品牌介绍模板位置。</p>
+        </div>
+        <span class="count" id="aplusCount">0 / 4</span>
+      </div>
+      <div class="uploader">
+        <input id="aplusInput" type="file" accept="image/*" multiple />
+        <button class="clear" type="button" data-clear="aplus">清空模块</button>
+      </div>
+      <div class="preview" id="aplusPreview"></div>
+    </section>
+
+    <section class="module" data-module="purchase" data-limit="7">
+      <div class="module-head">
+        <div>
+          <h2>模块四：购买区 7 张图</h2>
+          <p class="hint">对应参考图1：前 3 张用于 Finish 小图，后 4 张用于 Get Everything You Need 配件图。</p>
+        </div>
+        <span class="count" id="purchaseCount">0 / 7</span>
+      </div>
+      <div class="uploader">
+        <input id="purchaseInput" type="file" accept="image/*" multiple />
+        <button class="clear" type="button" data-clear="purchase">清空模块</button>
+      </div>
+      <div class="preview" id="purchasePreview"></div>
+    </section>
+
+    <section class="module" data-module="compare" data-limit="6">
+      <div class="module-head">
+        <div>
+          <h2>模块五：Compare Similar Items</h2>
+          <p class="hint">只需上传 6 张。展示页第 1 张自动使用主图模块第 1 张，后 6 张使用这里上传的图片。</p>
+        </div>
+        <span class="count" id="compareCount">0 / 6</span>
+      </div>
+      <div class="uploader">
+        <input id="compareInput" type="file" accept="image/*" multiple />
+        <button class="clear" type="button" data-clear="compare">清空模块</button>
+      </div>
+      <div class="preview" id="comparePreview"></div>
+    </section>
+
+    <section class="module" data-module="reviews" data-limit="7">
+      <div class="module-head">
+        <div>
+          <h2>模块六：评论区 7 张图</h2>
+          <p class="hint">前 5 张显示在评论图片横排，第 6、7 张显示在两条评论右侧。</p>
+        </div>
+        <span class="count" id="reviewsCount">0 / 7</span>
+      </div>
+      <div class="uploader">
+        <input id="reviewsInput" type="file" accept="image/*" multiple />
+        <button class="clear" type="button" data-clear="reviews">清空模块</button>
+      </div>
+      <div class="preview" id="reviewsPreview"></div>
+    </section>
+
+    <div class="actions">
+      <button class="primary" type="button" id="saveButton">保存到展示页</button>
+      <button class="secondary" type="button" id="reloadServerData">重新读取正式图片</button>
+      <a class="secondary" href="index.html">返回展示页</a>
+    </div>
+    <div class="status" id="status"></div>
+  </main>
+
+  <script src="site-data.js"></script>
+  <script>
+    const STORAGE_KEY = "wayfairShowcaseImages";
+    const DB_NAME = "wayfairShowcaseDB";
+    const STORE_NAME = "modules";
+    const GROUP_PAGES = { group1: "index.html", group2: "index.html", group3: "index.html" };
+    const MODULE_KEYS = ["main", "specs", "aplus", "purchase", "compare", "reviews"];
+    let currentGroup = localStorage.getItem("wayfairActiveGroup") || "group1";
+    let state = { main: [], aplus: [], purchase: [], compare: [], reviews: [], specs: [] };
+
+    const modules = {
+      main: { input: "mainInput", preview: "mainPreview", count: "mainCount", limit: 10 },
+      specs: { input: "specsInput", preview: "specsPreview", count: "specsCount", limit: 1 },
+      aplus: { input: "aplusInput", preview: "aplusPreview", count: "aplusCount", limit: 4 },
+      purchase: { input: "purchaseInput", preview: "purchasePreview", count: "purchaseCount", limit: 7 },
+      compare: { input: "compareInput", preview: "comparePreview", count: "compareCount", limit: 6 },
+      reviews: { input: "reviewsInput", preview: "reviewsPreview", count: "reviewsCount", limit: 7 }
+    };
+
+    function emptyState() {
+      return { main: [], specs: [], aplus: [], purchase: [], compare: [], reviews: [] };
+    }
+
+    function cloneGroupData(group) {
+      const source = window.WAYFAIR_SITE_DATA?.[group] || {};
+      const next = emptyState();
+      MODULE_KEYS.forEach((module) => {
+        next[module] = Array.isArray(source[module]) ? source[module].slice() : [];
+      });
+      return next;
+    }
+
+    function scopedKey(module) {
+      return `${currentGroup}:${module}`;
+    }
+
+    const FILE_NAMES = {
+      main: (index) => `main${index + 1}.jpg`,
+      specs: () => "chicun1.jpg",
+      aplus: (index) => `A+${index + 1}.jpg`,
+      purchase: (index) => index < 3 ? `finish${index + 1}.jpg` : `peijian${index - 2}.jpg`,
+      compare: (index) => `xiangsi${index + 1}.jpg`,
+      reviews: (index) => `pinglun${index + 1}.jpg`
+    };
+
+    function setActiveGroup(group) {
+      currentGroup = group;
+      localStorage.setItem("wayfairActiveGroup", group);
+      document.querySelectorAll(".group-button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.group === group);
+      });
+      document.getElementById("groupViewLink").href = GROUP_PAGES[group];
+      document.getElementById("groupViewLink").textContent = `查看${buttonLabel(group)}页面`;
+    }
+
+    function buttonLabel(group) {
+      return group === "group1" ? "图组1" : group === "group2" ? "图组2" : "图组3";
+    }
+
+    function status(text, danger = false) {
+      const node = document.getElementById("status");
+      node.textContent = text;
+      node.style.color = danger ? "var(--danger)" : "var(--ok)";
+    }
+
+    function fileToImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = reader.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function openImageDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onupgradeneeded = () => request.result.createObjectStore(STORE_NAME);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function readImageDB() {
+      const db = await openImageDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const store = tx.objectStore(STORE_NAME);
+        const result = {};
+        const keys = MODULE_KEYS;
+        let pending = keys.length;
+        keys.forEach((module) => {
+          const request = store.get(scopedKey(module));
+          request.onsuccess = () => {
+            const scopedResult = request.result;
+            if (Array.isArray(scopedResult)) {
+              result[module] = scopedResult;
+              pending -= 1;
+              if (!pending) resolve(result);
+              return;
+            }
+            if (currentGroup === "group1") {
+              const legacyRequest = store.get(module);
+              legacyRequest.onsuccess = () => {
+                result[module] = Array.isArray(legacyRequest.result) ? legacyRequest.result : [];
+                pending -= 1;
+                if (!pending) resolve(result);
+              };
+              legacyRequest.onerror = () => reject(legacyRequest.error);
+              return;
+            }
+            result[module] = [];
+            pending -= 1;
+            if (!pending) resolve(result);
+          };
+          request.onerror = () => reject(request.error);
+        });
+      });
+    }
+
+    async function writeImageDB(nextState) {
+      const db = await openImageDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, "readwrite");
+        const store = tx.objectStore(STORE_NAME);
+        MODULE_KEYS.forEach((module) => {
+          store.put(nextState[module] || [], scopedKey(module));
+        });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    function dataUrlToBlob(dataUrl) {
+      const [header, base64] = dataUrl.split(",");
+      const mime = header.match(/data:(.*?);/)?.[1] || "image/jpeg";
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+      return new Blob([bytes], { type: mime });
+    }
+
+    async function getOrCreateDirectory(root, parts) {
+      let dir = root;
+      for (const part of parts) {
+        dir = await dir.getDirectoryHandle(part, { create: true });
+      }
+      return dir;
+    }
+
+    function buildServerDataForCurrentGroup() {
+      const data = structuredClone(window.WAYFAIR_SITE_DATA || {});
+      data.group1 ||= emptyState();
+      data.group2 ||= emptyState();
+      data.group3 ||= emptyState();
+      data[currentGroup] = emptyState();
+      MODULE_KEYS.forEach((module) => {
+        data[currentGroup][module] = (state[module] || []).map((src, index) => {
+          if (typeof src === "string" && !src.startsWith("data:")) return src;
+          return `assets/uploads/${currentGroup}/${FILE_NAMES[module](index)}`;
+        });
+      });
+      return data;
+    }
+
+    async function writeServerFilesFromState() {
+      if (!window.showDirectoryPicker) {
+        status("浏览器不支持直接写入文件夹。请使用打包文件或手动覆盖 assets/uploads。", true);
+        return false;
+      }
+
+      status("请选择网站项目根目录，也就是包含 index.html 的文件夹。");
+      const root = await window.showDirectoryPicker({ mode: "readwrite" });
+      const uploadDir = await getOrCreateDirectory(root, ["assets", "uploads", currentGroup]);
+
+      for (const module of MODULE_KEYS) {
+        const images = state[module] || [];
+        for (let index = 0; index < images.length; index += 1) {
+          const src = images[index];
+          if (typeof src !== "string" || !src.startsWith("data:")) continue;
+          const fileHandle = await uploadDir.getFileHandle(FILE_NAMES[module](index), { create: true });
+          const writable = await fileHandle.createWritable();
+          await writable.write(dataUrlToBlob(src));
+          await writable.close();
+        }
+      }
+
+      const data = buildServerDataForCurrentGroup();
+      const siteDataHandle = await root.getFileHandle("site-data.js", { create: true });
+      const writable = await siteDataHandle.createWritable();
+      await writable.write(`window.WAYFAIR_SITE_DATA = ${JSON.stringify(data, null, 2)};\n`);
+      await writable.close();
+      return true;
+    }
+
+    async function compressImage(file, module) {
+      const img = await fileToImage(file);
+      const maxSize = module === "main" ? 1500 : 1300;
+      const ratio = Math.min(1, maxSize / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * ratio);
+      canvas.height = Math.round(img.height * ratio);
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/jpeg", module === "main" ? 0.72 : 0.68);
+    }
+
+    function labelFor(module, index) {
+      if (module === "main" && index === 0) return "主图";
+      if (module === "main" && index < 3) return `展示图 ${index + 1}`;
+      if (module === "main") return `缩略图 ${index + 1}`;
+      if (module === "aplus") return `A+ 图 ${index + 1}`;
+      if (module === "purchase" && index < 3) return `Finish 图 ${index + 1}`;
+      if (module === "purchase") return `配件图 ${index - 2}`;
+      if (module === "compare") return `相似商品图 ${index + 2}`;
+      if (module === "reviews" && index < 5) return `评论横排图 ${index + 1}`;
+      if (module === "reviews") return `评论右侧图 ${index - 4}`;
+      if (module === "specs") return "Specifications 图";
+      return `图片 ${index + 1}`;
+    }
+
+    function render(module) {
+      const config = modules[module];
+      const images = state[module] || [];
+      const preview = document.getElementById(config.preview);
+      const sortable = module === "main" || module === "aplus";
+      preview.innerHTML = "";
+      images.forEach((src, index) => {
+        const tile = document.createElement("div");
+        tile.className = "tile";
+        tile.innerHTML = `
+          <div class="tile-img"><img src="${src}" alt="${labelFor(module, index)}"></div>
+          <div class="tile-meta">
+            <span class="badge">${labelFor(module, index)}</span>
+            <button class="remove" type="button" aria-label="删除">删除</button>
+            ${sortable ? `
+              <div class="sort-actions">
+                <button class="sort-button move-up" type="button" ${index === 0 ? "disabled" : ""}>上移</button>
+                <button class="sort-button move-down" type="button" ${index === images.length - 1 ? "disabled" : ""}>下移</button>
+              </div>
+            ` : ""}
+          </div>
+        `;
+        tile.querySelector(".remove").addEventListener("click", () => {
+          state[module].splice(index, 1);
+          render(module);
+          status("已删除，记得保存。");
+        });
+        if (sortable) {
+          const moveUp = tile.querySelector(".move-up");
+          const moveDown = tile.querySelector(".move-down");
+          moveUp?.addEventListener("click", () => {
+            if (index <= 0) return;
+            [state[module][index - 1], state[module][index]] = [state[module][index], state[module][index - 1]];
+            render(module);
+            status("顺序已调整，点击保存后展示页生效。");
+          });
+          moveDown?.addEventListener("click", () => {
+            if (index >= state[module].length - 1) return;
+            [state[module][index + 1], state[module][index]] = [state[module][index], state[module][index + 1]];
+            render(module);
+            status("顺序已调整，点击保存后展示页生效。");
+          });
+        }
+        preview.appendChild(tile);
+      });
+      const count = document.getElementById(config.count);
+      count.textContent = Number.isFinite(config.limit) ? `${images.length} / ${config.limit}` : `${images.length}`;
+    }
+
+    async function addFiles(module, files) {
+      const config = modules[module];
+      const current = state[module] || [];
+      const available = Number.isFinite(config.limit) ? config.limit - current.length : files.length;
+      const chosen = Array.from(files).slice(0, Math.max(0, available));
+      if (!chosen.length) {
+        status("这个模块已经达到上传上限。", true);
+        return;
+      }
+      status("正在处理图片...");
+      for (const file of chosen) {
+        current.push(await compressImage(file, module));
+      }
+      state[module] = current;
+      render(module);
+      status(`已加入 ${chosen.length} 张图片，点击保存后展示页生效。`);
+    }
+
+    Object.entries(modules).forEach(([module, config]) => {
+      document.getElementById(config.input).addEventListener("change", (event) => {
+        addFiles(module, event.target.files);
+        event.target.value = "";
+      });
+    });
+
+    document.querySelectorAll("[data-clear]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const module = button.dataset.clear;
+        state[module] = [];
+        render(module);
+        status("已清空，记得保存。");
+      });
+    });
+
+    document.getElementById("saveButton").addEventListener("click", async () => {
+      try {
+        await writeImageDB(state);
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.setItem(`${STORAGE_KEY}Saved:${currentGroup}`, String(Date.now()));
+        const wroteFiles = await writeServerFilesFromState();
+        status(wroteFiles ? `${buttonLabel(currentGroup)}已保存，并已覆盖本地图片文件。` : `${buttonLabel(currentGroup)}已保存到展示页，本地文件夹未覆盖。`);
+      } catch (error) {
+        status("保存失败：如果刚才出现文件夹选择框，请确认选择的是项目根目录并允许写入。", true);
+      }
+    });
+
+    document.getElementById("reloadServerData").addEventListener("click", () => {
+      state = cloneGroupData(currentGroup);
+      localStorage.removeItem(`${STORAGE_KEY}Saved:${currentGroup}`);
+      Object.keys(modules).forEach(render);
+      status(`已重新读取${buttonLabel(currentGroup)}的正式图片。`);
+    });
+
+    async function loadCurrentGroup() {
+      state = cloneGroupData(currentGroup);
+      try {
+        const savedState = await readImageDB();
+        const hasSavedState = MODULE_KEYS.some((module) => Array.isArray(savedState[module]) && savedState[module].length);
+        if (hasSavedState) state = savedState;
+      } catch (error) {
+        if (currentGroup === "group1") {
+          const legacyState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+          const hasLegacyState = MODULE_KEYS.some((module) => Array.isArray(legacyState[module]) && legacyState[module].length);
+          if (hasLegacyState) state = legacyState;
+        }
+      }
+      state.main ||= [];
+      state.specs ||= [];
+      state.aplus ||= [];
+      state.purchase ||= [];
+      state.compare ||= [];
+      state.reviews ||= [];
+      Object.keys(modules).forEach(render);
+    }
+
+    document.querySelectorAll(".group-button").forEach((button) => {
+      button.addEventListener("click", async () => {
+        setActiveGroup(button.dataset.group);
+        await loadCurrentGroup();
+        status(`已切换到${buttonLabel(currentGroup)}。`);
+      });
+    });
+
+    (async function init() {
+      setActiveGroup(currentGroup);
+      await loadCurrentGroup();
+    })();
+  </script>
+</body>
+</html>
